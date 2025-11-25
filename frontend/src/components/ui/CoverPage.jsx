@@ -103,12 +103,11 @@ function CoverPage() {
                         <div className="platillo-image-wrapper">
                             <img 
                                 src={alitasimg}
-                                alt="Hamburguesa Gourmet" 
                                 className="platillo-image"
                             />
                         </div>
                         <div className="platillo-content">
-                            <h3 className="platillo-title">Alitas de pollo a la barbacoa</h3>
+                            <h3 className="platillo-title" style={{textAlign:'center'}}>Alitas de pollo a la barbacoa</h3>
                             <p className="platillo-description" style={{textAlign:'center'}}>
                                 Platillo tradicional que combina carne sazonada, horneada, bañadas en salsa barbacoa agridulce opcion perfecta para compartir.
                             </p>
@@ -120,13 +119,12 @@ function CoverPage() {
                         <div className="platillo-image-wrapper">
                             <img 
                                 src={newyork} 
-                                alt="Pasta Carbonara" 
                                 className="platillo-image"
                             />
                         </div>
                         <div className="platillo-content">
-                            <h3 className="platillo-title">Variedad de cortes</h3>
-                            <p className="platillo-description">
+                            <h3 className="platillo-title" style={{textAlign:'center'}}>Variedad de cortes</h3>
+                            <p className="platillo-description" style={{textAlign:'center'}}>
                                 Estilos de cortes únicos a escoger, al termino que guste y el sazón de la casa siempre presente para que deleite todos los sabores que brinda este platillo.
                             </p>
                         </div>
@@ -136,14 +134,13 @@ function CoverPage() {
                     <div className="platillo-card">
                         <div className="platillo-image-wrapper">
                             <img 
-                                src={cocteles} 
-                                alt="Volcán de Chocolate" 
+                                src={cocteles}  
                                 className="platillo-image"
                             />
                         </div>
                         <div className="platillo-content">
-                            <h3 className="platillo-title">Cócteles preparados</h3>
-                            <p className="platillo-description">
+                            <h3 className="platillo-title" style={{textAlign:'center'}}>Cócteles preparados</h3>
+                            <p className="platillo-description" style={{textAlign:'center'}}>
                                 Variedad de bebidas ideales para que la pases mucho mejor en esta experiencia y en acompañamiento con tus alimentos o simplemente para disfrutar.
                             </p>
                         </div>
