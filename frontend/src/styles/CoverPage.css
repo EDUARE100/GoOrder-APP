@@ -1,0 +1,339 @@
+
+
+html,body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif; 
+}
+
+.cover-container{
+    min-height: 1600px;
+    margin: 0;
+    position: relative;
+}
+
+.overlay {
+    position: static;
+    top: 0;
+    width: 100%;
+    min-height: 47vh;
+    background: linear-gradient(to right, #e66000, rgba(239, 84, 0, 0.9));
+    z-index: 10;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.cover-content {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #ffff;
+    width: 100%; 
+}
+
+/*Estilos para los iconos y los titulos y subtitulos del encabezado*/
+.cover-icon-wrapper {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 9999px;
+    box-shadow: 0 25px 30px -20px black;
+    margin-bottom: 0.8rem;
+    border-color: rgb(255, 128, 0);
+    border-width: 3px;
+    border-style: solid;
+    margin-top: 15px;
+}
+
+.cover-icon {
+    width: 3rem;
+    height: 3rem;
+    color: #F97316; 
+}
+
+.cover-title {
+    font-size: 3rem; 
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 1rem;
+    margin-top: 0;
+}
+
+.cover-subtitle {
+    font-size: 1.125rem;
+    font-weight: 300;
+    max-width: 42rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.cover-features {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cover-feature-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.cover-feature-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Segunda parte de la portada */
+
+.features-section {
+    background-color: #fef3e8;
+    padding: 2rem;
+    text-align: center;
+}
+
+.features-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2rem;
+    margin-top: 5px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.feature-icon-wrapper {
+    background-color: #fff3e6;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.feature-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #F97316;
+}
+
+.feature-card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+}
+
+.feature-card-text {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+/*Tercera parte de la portada*/
+
+.platillos-section {
+    background: linear-gradient(to right, #e66000, rgba(239, 84, 0, 0.9));
+    padding: 1rem;
+    text-align: center;
+}
+
+.platillos-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.platillos-subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 3rem;
+}
+
+.platillos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.platillo-card {
+    background-color: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.platillo-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.platillo-image-wrapper {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+}
+
+.platillo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/*Esta funcion hace el efecto de agrandado*/
+
+.platillo-card:hover .platillo-image {
+    transform: scale(1.1);
+}
+
+.platillo-content {
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.platillo-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.platillo-description {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+/*FOOTER*/
+
+.footer {
+    background-color: #1e293b;
+    color: white;
+    padding: 2.5rem 2rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.footer-logo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.footer-logo-icon {
+    width: 2rem;
+    height: 2rem;
+    color: #F97316;
+}
+
+.footer-logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.footer-tagline {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.footer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.footer-hours,
+.footer-phone {
+    font-weight: 400;
+}
+
+.footer-separator {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+
+@media (max-width: 1600px) {
+
+    .overlay {
+    position: static;
+    top: 0;
+    width: 100%;
+    min-height: 52vh;
+    background: linear-gradient(to right, #e66000, rgba(239, 84, 0, 0.9));
+    z-index: 10;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .cover-content {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #ffff;
+    width: 100%; 
+    }
+    
+    .cover-title {
+        font-size: 2rem;
+    }
+    
+    .cover-subtitle {
+        font-size: 1rem;
+    }
+    
+    .cover-features {
+        gap: 1rem;
+    }
+}
