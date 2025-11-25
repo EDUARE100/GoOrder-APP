@@ -6,12 +6,17 @@ import newyork from '../../assets/newyork.png'
 import cocteles from '../../assets/cocteles.png'
 
 //Constante de tipo handle para el botón, servirá para redireccionarnos a alguna parte del código como el login.
-//Faltan validaciones
-const handleRegister = () => {
-    console.log('Lol');
-  };
 
-function CoverPage() {
+
+
+function CoverPage({onLoginClick, showAuthbuttons = true}) {
+
+    const handleLogin = () => {
+    if (onLoginClick) {
+      onLoginClick();
+    }
+  };
+  
     return (
         <div className="cover-container">
             <div className="overlay">
@@ -29,14 +34,17 @@ function CoverPage() {
                         Tu restaurante favorito ahora más cerca que nunca. Ordena comida deliciosa
                         con solo unos clics y recíbela directo en tu puerta.
                     </p>
-
-                    <StarBorder 
-                            color="#F97316"
-                            speed="5s"
-                            thickness={1.5}
-                            onClick={handleRegister}>
-                        Comenzar a ordenar
-                    </StarBorder>
+                    {showAuthbuttons && (
+                        <>
+                            <StarBorder 
+                                color="#F97316"
+                                speed="5s"
+                                thickness={1.5}
+                                onClick={handleLogin}>
+                                Comenzar a ordenar
+                            </StarBorder>
+                        </>
+                    )} 
 
                     <div className="cover-features">
                         <div className="cover-feature-item">
@@ -103,6 +111,7 @@ function CoverPage() {
                         <div className="platillo-image-wrapper">
                             <img 
                                 src={alitasimg}
+                                alt="alitasimg"
                                 className="platillo-image"
                             />
                         </div>
@@ -119,6 +128,7 @@ function CoverPage() {
                         <div className="platillo-image-wrapper">
                             <img 
                                 src={newyork} 
+                                alt="newyork"
                                 className="platillo-image"
                             />
                         </div>
@@ -134,7 +144,8 @@ function CoverPage() {
                     <div className="platillo-card">
                         <div className="platillo-image-wrapper">
                             <img 
-                                src={cocteles}  
+                                src={cocteles}
+                                alt="cocteles"  
                                 className="platillo-image"
                             />
                         </div>

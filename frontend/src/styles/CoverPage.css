@@ -211,7 +211,7 @@ html,body {
     transition: transform 0.3s ease;
 }
 
-/*Esta funcion hace el efecto de agrandado*/
+/*Esta funcion hace el efecto de agrandado en las imagenes*/
 
 .platillo-card:hover .platillo-image {
     transform: scale(1.1);
