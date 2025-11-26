@@ -1,0 +1,21 @@
+Documentación del backend de GoOrder
+
+1.- Instalaciones y Requerimientos
+
+- Node.js // Entorno de ejecución que nos permitirá ejecutar código JavaScript en el lado del servidor.
+
+- Express.js // Framework de aplicaciones web flexible para Node.js, simplifica el desarrollo de Aplicaciones y APIS del ado del servidor
+
+- mysql2 // Biblioteca para Node.js que sirve como cliente para bases de datos mysql2, es más rápida que la que trae por defecto Node.js (node-mysql)
+
+- bcrypt.js // Biblioteca de JS que implementa la función hash (cifrado) diseñada para almacenar contraseñas de manera segura
+
+- jsonwebtoken // Es un estándar abierto para transmitir de forma segura información entre dos partes, como un servidor y un cliente. Se usa para principalmente para la autenticación, permitiendo a los usuarios acceder a servicios de forma segura
+
+- dotenv // Biblioteca que carga variables de entorno desde un archivo .env a la configuración de una aplicación. Su propósito es mantener información sensible como contraseñas o puertos especiales como claves de API o contraseñas de BD, separada del código fuente para mayor seguridad.
+
+- cors // (Cross-Origin Resource Sharing) es un mecanismo de seguridad en navegadores web que permite a un servidor web especificar qué dominios tienen permiso para acceder a sus recursos, incluso si el navegador está cargado en un origen diferente
+
+-- nodemon // Herramienta de línea de comandos que automatiza el proceso de reinicio del servidor en apps Node.js durante su desarrollo.
+
+2.- Desarrollo y notas
