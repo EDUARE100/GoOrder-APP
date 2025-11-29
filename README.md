@@ -2,6 +2,7 @@
 
 > [!Important]
 > Es 100% necesario instalar todo lo que se ve aquí con sus respectivas versiones para evitar problemas a la hora de ejecución. <br>
+> UPDATE: Comando **npm install** para instalar todas las dependencias ya establecidas del proyecto y para ejecutar **npm run dev** <br>
 > @ = version utilizada.
 
 <h2> Frontend </h2>
@@ -29,3 +30,4 @@
 <h2> Base de datos </h2>
 
 Directamente en el repo estará el .sql. Hacer git clone para acceder a todos los archivos 
+
