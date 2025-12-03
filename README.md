@@ -31,3 +31,4 @@
 
 Directamente en el repo estará el .sql. Hacer git clone para acceder a todos los archivos 
 
+ACTUALIZACIÓN: Se crearon los Sprints 1 y 2, el Sprint1 partió directamente de main y el Sprint2 igual, al termino del Sprint2 se hará Merge con main y del main ya actualizado partirá Sprint3
