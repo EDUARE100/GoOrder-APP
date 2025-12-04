@@ -1,6 +1,8 @@
 
 const mysql = require('mysql2');
-require('dotenv').config();
+const dotenv = require('dotenv')
+
+dotenv.config(); //Busca el archivo .env en la carpeta raiz del backend
 
 //Creamos el pool para las conexiones directamente traidas desde nuestro .env
 const pool = mysql.createPool({
