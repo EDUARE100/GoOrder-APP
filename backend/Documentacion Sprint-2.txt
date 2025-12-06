@@ -1,0 +1,25 @@
+Documentación del backend de GoOrder
+
+1.- Controladores y Funcionalidades
+
+productController.js // Controlador principal que gestiona el ciclo de vida de los productos. Replica la lógica de Ctrl_Producto.java permitiendo registrar nuevos ítems, actualizar precios/descripciones, controlar el stock en tiempo real y eliminar productos obsoletos de la base de datos.
+
+categoryController.js // Módulo encargado de la clasificación del inventario. Administra las familias de productos (ej. Bebidas, Comidas) asegurando la integridad referencial para que no se puedan crear productos sin una categoría válida asignada, basándose en la lógica de Ctrl_Categoria.java.
+
+clientController.js // Controlador para la gestión de la cartera de clientes. Permite registrar consumidores frecuentes, validar duplicidad mediante DNI/Cédula y mantener actualizada la información de contacto, siguiendo el patrón establecido en Ctrl_Cliente.java.
+
+tableController.js // (Gestión de Mesas) Controlador administrativo que permite visualizar la distribución del restaurante, gestionar el estado de las mesas (ocupada/libre) y su asignación a pedidos activos.
+
+SQL Parameterization // Técnica de seguridad implementada en todas las consultas a la base de datos (uso del símbolo ? en queries). Previene inyecciones SQL al separar estrictamente la instrucción SQL de los datos proporcionados por el usuario, tal como se implementaba con PreparedStatement en Java.
+
+Async/Await // Patrón de programación asíncrona utilizado en todos los endpoints del backend para manejar las promesas de la base de datos mysql2, evitando el bloqueo del servidor durante las operaciones de lectura/escritura (IO operations).
+
+2.- Desarrollo
+
+Arquitectura MVC (Adaptada) // Se implementó un patrón de diseño Modelo-Vista-Controlador en el servidor, separando las rutas (Routes) de la lógica de negocio (Controllers) y la configuración de datos (Config), para mantener una estructura organizada similar a los paquetes controlador y modelo de la versión Java.
+
+Connection Pooling // A diferencia de la versión de escritorio que abría y cerraba conexiones por cada consulta (cn.close()), el backend utiliza un "Pool de Conexiones" gestionado por mysql2. Esto mejora drásticamente el rendimiento al reutilizar conexiones activas para múltiples peticiones simultáneas de usuarios en la web.
+
+Validaciones de Servidor // Se incorporaron validaciones estrictas antes de las consultas SQL (ej. verificar que el precio y la categoría no sean nulos) para proteger la integridad de la base de datos, replicando las comprobaciones que hacía la interfaz Java antes de enviar el objeto Producto.
+
+Manejo de Respuestas HTTP // Se estandarizó el uso de códigos de estado HTTP (200 OK, 201 Created, 400 Bad Request, 500 Server Error) para que el Frontend pueda reaccionar adecuadamente a cada resultado, sustituyendo los System.out.println de errores y los valores booleanos de retorno usados en los controladores Java.
