@@ -1,6 +1,7 @@
 import CoverPage from './components/ui/CoverPage';
 import { useState, useEffect } from 'react';
 import Login from './components/ui/Login';
+import Dashboard from './components/ui/Dashboard';
 
 function App() {
 
@@ -33,14 +34,7 @@ function App() {
 
 if (isAuthenticated) {
     return (
-      <div style={{ padding: '20px' }}>
-        <h1>Bienvenido a GoOrder</h1>
-        {/* Aquí cargarás tu componente MENU o DASHBOARD */}
-        <p>Has iniciado sesión correctamente.</p>
-        <button onClick={handleLogout} style={{ marginTop: '20px' }}>
-          Cerrar Sesión
-        </button>
-      </div>
+      <Dashboard onLogout={handleLogout} />
     );
   }
 
