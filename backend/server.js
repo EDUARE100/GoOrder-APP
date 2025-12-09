@@ -105,6 +105,49 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// 3. OBTENER MENÚ CON FILTROS
+app.get('/api/products', async (req, res) => {
+    // 🚨 Capturamos el filtro que viene del frontend (ej: Platos Fuertes)
+    const categoryName = req.query.category; 
+    
+    try {
+        let query = `
+            SELECT 
+                p.idProducto AS id, 
+                p.nombre AS title, 
+                p.descripcion AS description, 
+                p.descripcion AS fullDescription,  
+                p.precio AS price, 
+                p.url_imagen AS image, 
+                c.descripcion AS category 
+            FROM tb_producto p
+            JOIN tb_categoria c ON p.idCategoria = c.idCategoria
+            WHERE p.estado = 1 
+        `;
+        
+        const queryParams = [];
+
+        // Filtramos por categorias y dependiendo de la descrupcion del producto
+        if (categoryName && categoryName !== 'Todos') {
+            // Agregamos la condición WHERE para filtrar por la descripción de la categoría
+            query += ` AND c.descripcion = ?`; 
+            // Agregamos el nombre de la categoría a los parámetros que el driver MySQL maneja
+            queryParams.push(categoryName);
+        }
+        
+        // El driver MySQL usa los queryParams para sustituir el '?' de forma segura
+        const [results] = await db.query(query, queryParams);
+        
+        res.json(results);
+
+    } catch (error) {
+        // Si hay un error SQL, lo mostramos en la consola del backend para diagnóstico
+        console.error('Error obteniendo productos con filtro:', error); 
+        // 🚨 Devolvemos el 500 al frontend
+        res.status(500).send('Error al obtener el menú');
+    }
+});
+
 //Inicialización del servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
