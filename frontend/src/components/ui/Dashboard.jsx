@@ -4,7 +4,22 @@ import { ShoppingCart, ArrowLeft, Plus } from 'lucide-react';
 import '../../styles/Dashboard.css'; 
 
 
-const API_URL = 'http://localhost:3000/api/products'; 
+const getBaseUrl = () => {
+    const currentHost = window.location.hostname; 
+    
+    // Si estamos en localhost
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+        return 'http://localhost:3000';
+    } 
+    // Si estamos en cualquier otra IP (celular en misma red)
+    else {
+        return 'http://192.168.100.63:3000';
+    }
+};
+
+const BASE_URL = getBaseUrl(); 
+const API_URL = BASE_URL + '/api/products';
+// ==========================================
 
 // Lista de categorías que tenemos en la BD
 const CATEGORIES = ['Todos', 'Entradas', 'Platos Fuertes', 'Bebidas', 'Postres'];

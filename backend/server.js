@@ -11,7 +11,10 @@ const app = express();
 
 // --- MIDDLEWARES ---
 // Esto permite que el frontend  se comunique con el backend
-app.use(cors()); 
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://192.168.100.63:5173', 'http://192.168.100.63:3000'],
+    credentials: true
+}));
 // Esto permite que el backend entienda los datos JSON que se envian
 app.use(express.json());
 

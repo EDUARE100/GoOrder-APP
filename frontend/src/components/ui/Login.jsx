@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { UtensilsCrossed, Mail, Lock, User, Phone } from 'lucide-react';
 import '../../styles/Login.css';
 
+
+const BASE_API_URL = 'http://192.168.100.63:3000/api/auth';
+
 function Login({ onBack, onLoginSuccess }) { 
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState("");
@@ -20,8 +23,7 @@ function Login({ onBack, onLoginSuccess }) {
             return;
         }
 
-        const baseUrl = 'http://localhost:3000/api/auth';
-        const endpoint = isLogin ? `${baseUrl}/login` : `${baseUrl}/register`;
+        const endpoint = isLogin ? `${BASE_API_URL}/login` : `${BASE_API_URL}/register`;
 
         const bodyData = isLogin 
             ? { email, password }
