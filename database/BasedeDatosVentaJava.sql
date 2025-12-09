@@ -58,6 +58,21 @@ idCategoria int(11) not null,
 estado int(1) not null 
 );
 
+ALTER TABLE tb_producto 
+ADD COLUMN url_imagen VARCHAR(500) DEFAULT 'https://placehold.co/400'; -- Agregamos una nueva columna para que se carguen las imagenes mediante url y no se haga tan pesado la carga de la página
+
+INSERT INTO tb_producto (nombre, cantidad, precio, descripcion, porcentajeIva, idCategoria, estado, url_imagen) VALUES
+('Alitas de pollo a la barbacoa', 50, 180.00, 'Platillo tradicional bañado en salsa BBQ. Opción ideal para compartir.', 16, 1, 1, 'https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&w=500&q=60'),
+('Corte New York', 20, 350.00, 'Corte fino asado al carbón con guarnición de vegetales.', 16, 2, 1, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=60'),
+('Hamburguesa Clásica', 40, 120.00, 'Carne de res 100%, lechuga, tomate y queso cheddar.', 16, 2, 1, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd'),
+('Mixología de Autor', 100, 95.00, 'Selección de cocteles preparados con licores premium.', 16, 3, 1, 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=500&q=60'),
+('Tiramisú', 50, 65.00, 'Clásico postre italiano con café y queso mascarpone.', 16, 4, 1, 'https://images.unsplash.com/photo-1712262582493-01aa9ec5c7f8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+
+UPDATE tb_producto
+SET url_imagen = 'https://images.unsplash.com/photo-1712262582493-01aa9ec5c7f8?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' 
+WHERE idProducto = 5;
+
+
 -- Crear tabla detalle de venta
 create table tb_detalle_venta(
 idDetalleVenta int (11) auto_increment primary key,
