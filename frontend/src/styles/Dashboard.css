@@ -301,14 +301,258 @@
     transform: translateY(0);
 }
 
-/* Animación de entrada */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Contenedor del icono + dropdown */
+.cart-container {
+    position: relative; /* Indispensable para que el dropdown se ancle aquí */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 15px; /* "Puente" invisible para que el mouse no pierda el hover al bajar */
+    margin-bottom: -15px; /* Compensa el padding para no descuadrar el header */
 }
 
-/* Ajustes Responsive */
+/* La caja blanca desplegable */
+.cart-dropdown {
+    position: absolute;
+    top: 100%; /* Se coloca justo debajo del contenedor */
+    right: 0;  /* Alineado a la derecha */
+    width: 340px;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    z-index: 1000; /* Asegura que flote sobre todo lo demás */
+    padding: 1.25rem;
+    cursor: default; /* Para que no parezca un botón gigante */
+    animation: fadeIn 0.2s ease-out;
+}
+
+.cart-dropdown h4 {
+    margin: 0 0 1rem 0;
+    color: #111827;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 0.5rem;
+}
+
+/* Lista de items con scroll si son muchos */
+.cart-items-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Cada fila de producto en el carrito */
+.cart-item-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f9fafb;
+}
+
+.cart-thumb {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.cart-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.cart-item-price {
+    font-size: 0.85rem;
+    color: #F97316;
+    font-weight: 700;
+}
+
+.btn-remove-item {
+    background: none;
+    border: none;
+    color: #ef4444; /* Rojo suave */
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: background 0.2s;
+}
+
+.btn-remove-item:hover {
+    background-color: #fee2e2;
+}
+
+.empty-cart-msg {
+    text-align: center;
+    color: #9ca3af;
+    margin: 2rem 0;
+}
+
+/* Pie del carrito (Total y botón) */
+.cart-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #f3f4f6;
+}
+
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.btn-checkout-mini {
+    width: 100%;
+    background-color: #F97316;
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-checkout-mini:hover {
+    background-color: #ea580c;
+}
+
+/* --- 2. Vista de Pago (Checkout) --- */
+
+.checkout-view {
+    max-width: 1000px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 2rem;
+}
+
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* Izquierda más pequeña, Derecha más grande */
+    gap: 3rem;
+}
+
+/* Tarjeta blanca para el resumen y el formulario */
+.checkout-summary, .checkout-form-container {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    height: fit-content;
+}
+
+.checkout-summary h3, .checkout-form-container h3 {
+    margin-top: 0;
+    color: #F97316;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkout-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    color: #4b5563;
+    font-size: 0.95rem;
+}
+
+.checkout-total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid #e5e7eb;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+/* Estilos del Formulario */
+.checkout-form .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.checkout-form label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.checkout-form input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    background-color: #f9fafb;
+    box-sizing: border-box; /* Importante para que no se salga */
+}
+
+.checkout-form input:focus {
+    outline: none;
+    border-color: #F97316;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Botón de Pagar (Verde para diferenciar) */
+.btn-pay-now {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: linear-gradient(to right, #10b981, #059669); /* Verde Esmeralda */
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s;
+}
+
+.btn-pay-now:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+}
+
+.btn-pay-now:active {
+    transform: translateY(0);
+}
+
+/* Responsive para Checkout */
 @media (max-width: 768px) {
+
     .dashboard-container {
         padding: 1rem;
     }
@@ -332,4 +576,50 @@
     .detail-title-main {
         font-size: 1.8rem;
     }
+
+    .checkout-grid {
+        grid-template-columns: 1fr; /* Una sola columna en tablets/móviles */
+    }
+    
+    .checkout-summary {
+        order: 2; /* Pone el resumen abajo en móviles */
+    }
+
+    .cart-container {
+        position: static; 
+    }
+
+    .cart-dropdown {
+        /* Cambiamos a FIXED para que se posicione respecto a la PANTALLA, no al icono */
+        position: fixed;
+        
+        /* Lo bajamos un poco para que no tape el header (ajusta el px si tu header es más alto) */
+        top: 80px; 
+        
+        /* Centrado perfecto en la pantalla */
+        left: 50%;
+        transform: translateX(-50%);
+        
+        /* Ancho adaptable */
+        width: 90%; 
+        max-width: 350px; /* Que no sea gigante en tablets */
+        
+        /* Reseteamos la propiedad de escritorio */
+        right: auto;
+        
+        /* Sombra más fuerte para que se note que flota sobre el contenido */
+        box-shadow: 0 0 0 100vh rgba(0, 0, 0, 0.5), /* Esto crea un fondo oscuro detrás (tipo modal) */
+                    0 10px 25px rgba(0,0,0,0.2); 
+    }
+
+    /* Ajustamos la lista para que sea más pequeña en altura en móviles */
+    .cart-items-list {
+        max-height: 200px;
+    }
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

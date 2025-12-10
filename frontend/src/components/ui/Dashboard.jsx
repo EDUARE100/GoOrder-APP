@@ -1,8 +1,8 @@
-// src/components/ui/Dashboard.jsx
-import { useState, useEffect } from 'react'; //Agregamos useEffect
-import { ShoppingCart, ArrowLeft, Plus } from 'lucide-react';
-import '../../styles/Dashboard.css'; 
 
+import { useState, useEffect } from 'react'; //Agregamos useEffect
+import {  ArrowLeft, Plus, CreditCard, MapPin } from 'lucide-react';
+import '../../styles/Dashboard.css'; 
+import Cart from './Cart';
 
 const getBaseUrl = () => {
     const currentHost = window.location.hostname; 
@@ -29,9 +29,11 @@ function Dashboard({ user, onLogout }) {
   const [products, setProducts] = useState([]);
   // Estado para saber qué categoría está seleccionada (para el filtro)
   const [selectedCategory, setSelectedCategory] = useState('Todos');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true); // Nuevo estado para la carga
+
+  const [cartItems, setCartItems] = useState([]); // Array de productos en carrito
+  const [currentView, setCurrentView] = useState('catalog'); // 'catalog', 'detail', 'checkout'
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   // LÓGICA DE CARGA DE DATOS (useEffect) - HU-05
   useEffect(() => {
@@ -67,10 +69,39 @@ function Dashboard({ user, onLogout }) {
   }, [selectedCategory]); 
 
   // Función de Agregar al Carrito (se queda igual por ahora)
-  const handleAddToCart = () => {
-    setCartCount(prev => prev + 1);
-    alert(`¡${selectedProduct.title} se agregó a tu orden!`);
-    setSelectedProduct(null); 
+      // 1. Agregar producto al array del carrito
+    const handleAddToCart = () => {
+      setCartItems([...cartItems, selectedProduct]);
+      alert(`¡${selectedProduct.title} se agregó a tu orden!`);
+      setSelectedProduct(null);
+      setCurrentView('catalog'); // Regresa al catálogo
+    };
+
+    // 2. Eliminar producto específico (por índice para permitir duplicados)
+    const handleRemoveFromCart = (indexToRemove) => {
+      setCartItems(cartItems.filter((_, index) => index !== indexToRemove));
+    };
+
+    // 3. Calcular total, este es visual y para pasarlo al checkout, el carttotal lo calcula también en Cart.jsx
+    const cartTotal = cartItems.reduce((total, item) => total + item.price, 0);
+
+    // 4. Ir a pagar
+    const handleGoToCheckout = () => {
+      setShowCart(false); // Ocultar el dropdown
+      setCurrentView('checkout'); // Cambiar vista principal
+      setSelectedProduct(null); // Asegurar que no se vea el detalle
+    };
+
+    // 5. Manejo de selección de producto
+    const handleProductClick = (product) => {
+      setSelectedProduct(product);
+      setCurrentView('detail');
+    };
+
+    // 6. Volver al menú
+    const handleBackToMenu = () => {
+      setSelectedProduct(null);
+      setCurrentView('catalog');
   };
 
 
@@ -81,6 +112,7 @@ function Dashboard({ user, onLogout }) {
   return (
     <div className="dashboard-container">
       
+      {/* HEADER */}
       <header className="dashboard-header">
         <div>
             <h1 className="dashboard-title">Menú GoOrder</h1>
@@ -88,13 +120,13 @@ function Dashboard({ user, onLogout }) {
         </div>
         
         <div className="user-actions">
-             {/* Icono de Carrito con contador (sigue igual) */}
-            <div className="cart-icon-wrapper">
-                <ShoppingCart size={24} color="#333" />
-                {cartCount > 0 && (
-                    <span className="cart-badge">{cartCount}</span>
-                )}
-            </div>
+            
+            {/* AQUÍ USAMOS TU NUEVO COMPONENTE CART */}
+            <Cart 
+                cartItems={cartItems} 
+                onRemoveItem={handleRemoveFromCart}
+                onGoToCheckout={handleGoToCheckout}
+            />
             
             <button onClick={onLogout} className="btn-logout">
                 Cerrar Sesión
@@ -103,49 +135,86 @@ function Dashboard({ user, onLogout }) {
       </header>
 
       <main>
-        {selectedProduct ? (
-          /* ================= VISTA DE DETALLE (HU-06) ================= */
+        {/* VISTA DE DETALLE */}
+        {currentView === 'detail' && selectedProduct && (
           <div className="detail-view">
-            {/* ... Tu código de detalle sigue igual, pero usando selectedProduct ... */}
-            <button onClick={() => setSelectedProduct(null)} className="btn-back">
+            <button onClick={handleBackToMenu} className="btn-back">
                 <ArrowLeft size={20} /> Regresar al menú
             </button>
-
             <div className="detail-layout">
-                <img 
-                    src={selectedProduct.image} 
-                    alt={selectedProduct.title} 
-                    className="detail-image"
-                />
-                
+                <img src={selectedProduct.image} alt={selectedProduct.title} className="detail-image"/>
                 <div className="detail-info">
-                    {/* El backend te devuelve la categoría */}
                     <span className="detail-category">{selectedProduct.category}</span> 
                     <h2 className="detail-title-main">{selectedProduct.title}</h2>
                     <div className="detail-price-main">${selectedProduct.price}.00</div>
-                    
-                    <p className="detail-description-main">
-                        {/* fullDescription viene de la BD */}
-                        {selectedProduct.fullDescription} 
-                    </p>
-
+                    <p className="detail-description-main">{selectedProduct.fullDescription}</p>
                     <button onClick={handleAddToCart} className="btn-add-order">
                         <Plus size={24} /> Agregar al Pedido
                     </button>
                 </div>
             </div>
           </div>
+        )}
 
-        ) : (
-          /* ================= VISTA DE CATÁLOGO (HU-05) ================= */
+        {/* VISTA DE CHECKOUT (PAGO) */}
+        {currentView === 'checkout' && (
+            <div className="checkout-view">
+                <button onClick={handleBackToMenu} className="btn-back">
+                    <ArrowLeft size={20} /> Seguir comprando
+                </button>
+                <h2 className="section-title">Finalizar Compra</h2>
+                <div className="checkout-grid">
+                    <div className="checkout-summary">
+                        <h3>Resumen del Pedido</h3>
+                        {cartItems.map((item, idx) => (
+                            <div key={idx} className="checkout-item">
+                                <span>{item.title}</span>
+                                <span>${item.price}</span>
+                            </div>
+                        ))}
+                        <div className="checkout-total-row">
+                            <strong>Total a pagar:</strong>
+                            <strong>${cartTotal}.00</strong>
+                        </div>
+                    </div>
+                    <div className="checkout-form-container">
+                        <h3>Datos de Envío y Pago</h3>
+                        <form className="checkout-form" onSubmit={(e) => { e.preventDefault(); alert("¡Compra realizada!"); }}>
+                            <div className="form-group">
+                                <label><MapPin size={16}/> Dirección de entrega</label>
+                                <input type="text" placeholder="Calle, Número, Colonia" required />
+                            </div>
+                            <div className="form-group">
+                                <label><CreditCard size={16}/> Número de Tarjeta</label>
+                                <input type="text" placeholder="0000 0000 0000 0000" maxLength="16" required />
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Expira (MM/AA)</label>
+                                    <input type="text" placeholder="12/25" maxLength="5" required />
+                                </div>
+                                <div className="form-group">
+                                    <label>CVV</label>
+                                    <input type="password" placeholder="123" maxLength="3" required />
+                                </div>
+                            </div>
+                            <button type="submit" className="btn-pay-now">
+                                Pagar ${cartTotal}.00
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* VISTA DE CATÁLOGO */}
+        {currentView === 'catalog' && (
           <div className="catalog-view">
-            {/* 1. BOTONES DE FILTRADO FUNCIONALES */}
             <div className="filters-scroll">
                 {CATEGORIES.map((cat) => (
                     <button 
                         key={cat} 
                         className={`filter-btn ${selectedCategory === cat ? 'active' : ''}`}
-                        // Al hacer clic, se dispara el useEffect y llama al API
                         onClick={() => setSelectedCategory(cat)} 
                     >
                         {cat}
@@ -153,26 +222,16 @@ function Dashboard({ user, onLogout }) {
                 ))}
             </div>
             
-            {/* Si no hay productos (Ej: el filtro no regresa nada) */}
             {products.length === 0 && (
-                <p style={{ textAlign: 'center', marginTop: '50px', color: '#888' }}>
-                    No se encontraron productos en la categoría "{selectedCategory}".
-                </p>
+                <p className="no-products-msg">No se encontraron productos.</p>
             )}
 
-            {/* 2. Grid de Productos (usamos el estado 'products') */}
             <div className="products-grid">
               {products.map((product) => (
-                <div 
-                    key={product.id} 
-                    className="product-card"
-                    // Al hacer click, guardamos el producto completo en selectedProduct
-                    onClick={() => setSelectedProduct(product)} 
-                >
+                <div key={product.id} className="product-card" onClick={() => handleProductClick(product)}>
                   <div className="card-image-container">
                     <img src={product.image} alt={product.title} className="card-image" />
                   </div>
-                  
                   <div className="card-content">
                     <div className="card-header">
                         <h3 className="card-title">{product.title}</h3>
