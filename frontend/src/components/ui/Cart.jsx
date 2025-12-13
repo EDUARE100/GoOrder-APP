@@ -1,12 +1,9 @@
-// src/components/ui/Cart.jsx
 import { useState } from 'react';
 import { ShoppingCart, Trash2 } from 'lucide-react';
 
 function Cart({ cartItems, onRemoveItem, onGoToCheckout }) {
-  // El estado de mostrar/ocultar
   const [showCart, setShowCart] = useState(false);
 
-  // Calculamos el total aquí mismo para mostrarlo
   const cartTotal = cartItems.reduce((total, item) => total + item.price, 0);
 
   return (
@@ -15,7 +12,6 @@ function Cart({ cartItems, onRemoveItem, onGoToCheckout }) {
         onMouseEnter={() => setShowCart(true)}
         onMouseLeave={() => setShowCart(false)}
     >
-        {/* Icono y Badge */}
         <div className="cart-icon-wrapper">
             <ShoppingCart size={24} color="#333" />
             {cartItems.length > 0 && (
@@ -23,7 +19,6 @@ function Cart({ cartItems, onRemoveItem, onGoToCheckout }) {
             )}
         </div>
 
-        {/* Dropdown Desplegable */}
         {showCart && (
             <div className="cart-dropdown">
                 <h4>Tu Pedido</h4>
@@ -40,10 +35,7 @@ function Cart({ cartItems, onRemoveItem, onGoToCheckout }) {
                                         <span className="cart-item-price">${item.price}</span>
                                     </div>
                                     <button 
-                                        onClick={(e) => {
-                                            e.stopPropagation(); 
-                                            onRemoveItem(index); // Llamamos a la función del padre
-                                        }} 
+                                        onClick={(e) => { e.stopPropagation(); onRemoveItem(index); }} 
                                         className="btn-remove-item"
                                     >
                                         <Trash2 size={16} />
@@ -60,7 +52,7 @@ function Cart({ cartItems, onRemoveItem, onGoToCheckout }) {
                             <button 
                                 onClick={() => {
                                     setShowCart(false); // Cerramos el menú
-                                    onGoToCheckout();   // Navegamos al checkout
+                                    onGoToCheckout();   // ¡Navegamos a la pagina nueva!
                                 }} 
                                 className="btn-checkout-mini"
                             >

@@ -1,17 +1,24 @@
 import { useState } from 'react';
-import { UtensilsCrossed, Mail, Lock, User, Phone } from 'lucide-react';
+import { UtensilsCrossed, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
 import '../../styles/Login.css';
-
 
 const BASE_API_URL = 'http://192.168.100.63:3000/api/auth';
 
 function Login({ onBack, onLoginSuccess }) { 
     const [isLogin, setIsLogin] = useState(true);
+    
+    // Estados existentes
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setname] = useState("");
     const [telefono, settelefono] = useState("");
     const [confirmpassword, setconfirmpassword] = useState("");
+    
+    // 2. NUEVOS ESTADOS para la dirección
+    const [calle, setCalle] = useState("");
+    const [numero, setNumero] = useState("");
+    const [colonia, setColonia] = useState("");
+    
     const [error, setError] = useState("");
 
     const handleSubmit = async (e) => {
@@ -25,9 +32,19 @@ function Login({ onBack, onLoginSuccess }) {
 
         const endpoint = isLogin ? `${BASE_API_URL}/login` : `${BASE_API_URL}/register`;
 
+        // ACTUALIZAMOS EL BODY DEL REGISTRO
+        // Enviamos la dirección desglosada para que se guarde en la BD
         const bodyData = isLogin 
             ? { email, password }
-            : { nombre: name, email, password, telefono };
+            : { 
+                nombre: name, 
+                email, 
+                password, 
+                telefono,
+                calle,
+                numero_exterior: numero,
+                colonia
+              };
 
         try {
             const response = await fetch(endpoint, {
@@ -46,7 +63,6 @@ function Login({ onBack, onLoginSuccess }) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 
-                // AHORA SÍ FUNCIONARÁ PORQUE LO RECIBIMOS ARRIBA
                 if (onLoginSuccess) {
                     onLoginSuccess();
                 } else {
@@ -54,6 +70,7 @@ function Login({ onBack, onLoginSuccess }) {
                 }
             } else {
                 alert("Registro exitoso. Ahora inicia sesión.");
+                // Limpiamos formulario y cambiamos a Login
                 setIsLogin(true);
                 setPassword("");
                 setconfirmpassword("");
@@ -64,11 +81,10 @@ function Login({ onBack, onLoginSuccess }) {
             setError(err.message || "Error al conectar con el servidor");
         }
     };
-    //Creamos todas nuestras clases mediante la importación del archivo css
+
     return (
         <div className="login-container">
             <div className="login-card">
-                {/* Header naranja */}
                 <div className="login-header">
                     <div className="login-icon-wrapper">
                         <UtensilsCrossed className="login-icon" />
@@ -77,7 +93,6 @@ function Login({ onBack, onLoginSuccess }) {
                     <p className="login-subtitle">Tu comida favorita a un clic</p>
                 </div>
 
-                {/* Tabs */}
                 <div className="login-tabs">
                     <button
                         className={`login-tab ${isLogin ? 'active' : ''}`}
@@ -93,9 +108,9 @@ function Login({ onBack, onLoginSuccess }) {
                     </button>
                 </div>
 
-                {/* Formulario */}
                 <form className="login-form" onSubmit={handleSubmit}>
-                    {/* Campos de REGISTRO si es falso que isLogin se accede al campo de registro */}
+                    
+                    {/* SECCIÓN DE REGISTRO */}
                     {!isLogin && (
                         <>
                             <div className="form-group">
@@ -104,7 +119,7 @@ function Login({ onBack, onLoginSuccess }) {
                                     <User className="input-icon" />
                                     <input
                                         type="text"
-                                        placeholder="Tunombrecompleto"
+                                        placeholder="nombre_completo"
                                         className="form-input"
                                         value={name}
                                         onChange={(e) => setname(e.target.value)}
@@ -119,7 +134,7 @@ function Login({ onBack, onLoginSuccess }) {
                                     <Phone className="input-icon" />
                                     <input
                                         type="tel"
-                                        placeholder="+52 123 456 7890"
+                                        placeholder="Ej. 229 123 4567"
                                         className="form-input"
                                         value={telefono}
                                         onChange={(e) => settelefono(e.target.value)}
@@ -127,10 +142,57 @@ function Login({ onBack, onLoginSuccess }) {
                                     />
                                 </div>
                             </div>
+
+                            {/* 4. NUEVOS CAMPOS DE DIRECCIÓN */}
+                            <div className="form-group">
+                                <label className="form-label">Calle</label>
+                                <div className="input-wrapper">
+                                    <MapPin className="input-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Av. 20 de Noviembre"
+                                        className="form-input"
+                                        value={calle}
+                                        onChange={(e) => setCalle(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <div className="form-group" style={{ flex: 1 }}>
+                                    <label className="form-label">Número Ext.</label>
+                                    <div className="input-wrapper">
+                                        <MapPin className="input-icon" />
+                                        <input
+                                            type="text"
+                                            placeholder="452"
+                                            className="form-input"
+                                            value={numero}
+                                            onChange={(e) => setNumero(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group" style={{ flex: 1 }}>
+                                    <label className="form-label">Colonia</label>
+                                    <div className="input-wrapper">
+                                        <MapPin className="input-icon" />
+                                        <input
+                                            type="text"
+                                            placeholder="Centro"
+                                            className="form-input"
+                                            value={colonia}
+                                            onChange={(e) => setColonia(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </>
                     )}
 
-                    {/* Campos COMUNES (Email) */}
+                    {/* CAMPOS COMUNES (Email y Pass) */}
                     <div className="form-group">
                         <label className="form-label">Correo Electrónico</label>
                         <div className="input-wrapper">
@@ -146,7 +208,6 @@ function Login({ onBack, onLoginSuccess }) {
                         </div>
                     </div>
 
-                    {/* Campos COMUNES (Contraseña) */}
                     <div className="form-group">
                         <label className="form-label">Contraseña</label>
                         <div className="input-wrapper">
@@ -162,7 +223,6 @@ function Login({ onBack, onLoginSuccess }) {
                         </div>
                     </div>
 
-                    {/* Campo adicional para REGISTRO (Confirmar contraseña) */}
                     {!isLogin && (
                         <div className="form-group">
                             <label className="form-label">Confirmar Contraseña</label>
@@ -180,17 +240,17 @@ function Login({ onBack, onLoginSuccess }) {
                         </div>
                     )}
 
+                    {error && <p className="error-message" style={{color: 'red', textAlign: 'center'}}>{error}</p>}
+
                     <button type="submit" className="login-button">
                         {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
                     </button>
                 </form>
 
-                {/* Footer */}
                 <p className="login-footer">
                     Al continuar, aceptas nuestros términos y condiciones
                 </p>
 
-                {/* Botón para volver */}
                 {onBack && (
                     <button onClick={onBack} className="back-button">
                         ← Volver al inicio

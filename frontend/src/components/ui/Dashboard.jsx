@@ -1,169 +1,158 @@
-
-import { useState, useEffect } from 'react'; //Agregamos useEffect
-import {  ArrowLeft, Plus, CreditCard, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Plus, MapPin, CreditCard } from 'lucide-react';
 import '../../styles/Dashboard.css'; 
 import Cart from './Cart';
 
 const getBaseUrl = () => {
     const currentHost = window.location.hostname; 
-    
-    // Si estamos en localhost
-    if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
-        return 'http://localhost:3000';
-    } 
-    // Si estamos en cualquier otra IP (celular en misma red)
-    else {
-        return 'http://192.168.100.63:3000';
-    }
+    return (currentHost === 'localhost' || currentHost === '127.0.0.1') 
+        ? 'http://localhost:3000' 
+        : 'http://192.168.100.63:3000';
 };
 
 const BASE_URL = getBaseUrl(); 
 const API_URL = BASE_URL + '/api/products';
-// ==========================================
+const ORDERS_URL = BASE_URL + '/api/orders';
 
-// Lista de categorías que tenemos en la BD
 const CATEGORIES = ['Todos', 'Entradas', 'Platos Fuertes', 'Bebidas', 'Postres'];
 
 function Dashboard({ user, onLogout }) {
-  // Estado para guardar todos los productos cargados de la BD
   const [products, setProducts] = useState([]);
-  // Estado para saber qué categoría está seleccionada (para el filtro)
   const [selectedCategory, setSelectedCategory] = useState('Todos');
-  const [loading, setLoading] = useState(true); // Nuevo estado para la carga
+  const [loading, setLoading] = useState(true);
 
-  const [cartItems, setCartItems] = useState([]); // Array de productos en carrito
+  const [cartItems, setCartItems] = useState([]);
   const [currentView, setCurrentView] = useState('catalog'); // 'catalog', 'detail', 'checkout'
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // LÓGICA DE CARGA DE DATOS (useEffect) - HU-05
+  // Estado para el formulario de pago
+  const [shippingData, setShippingData] = useState({
+      address: '', card: '', expiry: '', cvv: ''
+  });
+
+  // Carga de productos
   useEffect(() => {
     setLoading(true);
     let url = API_URL;
-
-    // 1. Lógica para construir la URL con el filtro
-    if (selectedCategory && selectedCategory !== 'Todos') {
-      // Si hay filtro, agregamos el parámetro a la URL
-      url += `?category=${selectedCategory}`; 
-    }
-
-    // 2. Ejecutamos la petición al Backend
+    if (selectedCategory && selectedCategory !== 'Todos') url += `?category=${selectedCategory}`; 
     fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Error al obtener el menú: ' + response.status);
-        }
-        return response.json();
-      })
-      .then(data => {
-        setProducts(data); // Guardamos los datos REALES de la BD
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error("Error al cargar productos:", error);
-        setLoading(false);
-        // Podrías mostrar un mensaje de error en pantalla si quieres
-      });
-
-  // 3. El [selectedCategory] en el array de dependencias 
-  // hace que esta función se ejecute CADA VEZ que el usuario cambia de filtro.
+      .then(res => res.ok ? res.json() : [])
+      .then(data => { setProducts(data); setLoading(false); })
+      .catch(err => { console.error(err); setLoading(false); });
   }, [selectedCategory]); 
 
-  // Función de Agregar al Carrito (se queda igual por ahora)
-      // 1. Agregar producto al array del carrito
-    const handleAddToCart = () => {
+  // Carrito y Navegación
+  const handleAddToCart = () => {
       setCartItems([...cartItems, selectedProduct]);
-      alert(`¡${selectedProduct.title} se agregó a tu orden!`);
-      setSelectedProduct(null);
-      setCurrentView('catalog'); // Regresa al catálogo
-    };
-
-    // 2. Eliminar producto específico (por índice para permitir duplicados)
-    const handleRemoveFromCart = (indexToRemove) => {
-      setCartItems(cartItems.filter((_, index) => index !== indexToRemove));
-    };
-
-    // 3. Calcular total, este es visual y para pasarlo al checkout, el carttotal lo calcula también en Cart.jsx
-    const cartTotal = cartItems.reduce((total, item) => total + item.price, 0);
-
-    // 4. Ir a pagar
-    const handleGoToCheckout = () => {
-      setShowCart(false); // Ocultar el dropdown
-      setCurrentView('checkout'); // Cambiar vista principal
-      setSelectedProduct(null); // Asegurar que no se vea el detalle
-    };
-
-    // 5. Manejo de selección de producto
-    const handleProductClick = (product) => {
-      setSelectedProduct(product);
-      setCurrentView('detail');
-    };
-
-    // 6. Volver al menú
-    const handleBackToMenu = () => {
       setSelectedProduct(null);
       setCurrentView('catalog');
   };
 
+  const handleRemoveFromCart = (index) => setCartItems(cartItems.filter((_, i) => i !== index));
+  const handleProductClick = (p) => { setSelectedProduct(p); setCurrentView('detail'); };
+  const handleBackToMenu = () => { setSelectedProduct(null); setCurrentView('catalog'); };
+  
+  const handleGoToCheckout = () => {
+      if(cartItems.length === 0) { alert("Tu carrito está vacío"); return; }
+      
+      // Aquí concatenamos los 3 campos del usuario para el envío
+      // Si el usuario tiene dirección guardada, la usamos por defecto
+      let defaultAddress = '';
+      if (user && user.calle) {
+          defaultAddress = `${user.calle} #${user.numero_exterior}, Col. ${user.colonia}`;
+      }
 
-  if (loading) {
-    return <div className="dashboard-container"><p>Cargando menú...</p></div>;
-  }
+      // Actualizamos el formulario con esa dirección
+      setShippingData(prev => ({
+          ...prev, 
+          address: defaultAddress 
+      }));
+
+      setCurrentView('checkout');
+  };
+
+  const handleInputChange = (e) => setShippingData({...shippingData, [e.target.name]: e.target.value});
+
+  // PROCESAR PAGO
+  const handlePlaceOrder = async (e) => {
+      e.preventDefault();
+      const total = cartItems.reduce((acc, item) => acc + item.price, 0);
+
+      try {
+          const response = await fetch(ORDERS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  userId: user.id,
+                  items: cartItems,
+                  total: total,
+                  // Se envía la dirección que esté en el input (ya sea la automática o si el usuario la editó)
+                  address: shippingData.address 
+              })
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+              alert(`¡Pedido Exitoso! ID: ${data.orderId}`);
+              setCartItems([]);
+              setShippingData({ address: '', card: '', expiry: '', cvv: '' });
+              setCurrentView('catalog');
+          } else {
+              alert('Error: ' + data.message);
+          }
+      } catch (error) {
+          console.error("Error pago:", error);
+          alert("Error de conexión");
+      }
+  };
+
+  if (loading) return <div className="dashboard-container"><p>Cargando...</p></div>;
   
   return (
     <div className="dashboard-container">
-      
-      {/* HEADER */}
       <header className="dashboard-header">
         <div>
             <h1 className="dashboard-title">Menú GoOrder</h1>
-            <p className="dashboard-subtitle">Hola, ¿qué se te antoja hoy?</p>
+            <p className="dashboard-subtitle">Hola, {user.nombre}</p>
         </div>
-        
         <div className="user-actions">
-            
-            {/* AQUÍ USAMOS TU NUEVO COMPONENTE CART */}
             <Cart 
                 cartItems={cartItems} 
                 onRemoveItem={handleRemoveFromCart}
-                onGoToCheckout={handleGoToCheckout}
+                onGoToCheckout={handleGoToCheckout} 
             />
-            
-            <button onClick={onLogout} className="btn-logout">
-                Cerrar Sesión
-            </button>
+            <button onClick={onLogout} className="btn-logout">Salir</button>
         </div>
       </header>
 
       <main>
-        {/* VISTA DE DETALLE */}
+        {/* VISTA 1: DETALLE DE PRODUCTO */}
         {currentView === 'detail' && selectedProduct && (
           <div className="detail-view">
-            <button onClick={handleBackToMenu} className="btn-back">
-                <ArrowLeft size={20} /> Regresar al menú
-            </button>
+            <button onClick={handleBackToMenu} className="btn-back"><ArrowLeft size={20}/> Volver</button>
             <div className="detail-layout">
                 <img src={selectedProduct.image} alt={selectedProduct.title} className="detail-image"/>
                 <div className="detail-info">
                     <span className="detail-category">{selectedProduct.category}</span> 
-                    <h2 className="detail-title-main">{selectedProduct.title}</h2>
+                    <h2>{selectedProduct.title}</h2>
                     <div className="detail-price-main">${selectedProduct.price}.00</div>
-                    <p className="detail-description-main">{selectedProduct.fullDescription}</p>
-                    <button onClick={handleAddToCart} className="btn-add-order">
-                        <Plus size={24} /> Agregar al Pedido
-                    </button>
+                    <p>{selectedProduct.fullDescription}</p>
+                    <button onClick={handleAddToCart} className="btn-add-order"><Plus size={24}/> Agregar</button>
                 </div>
             </div>
           </div>
         )}
 
-        {/* VISTA DE CHECKOUT (PAGO) */}
+        {/* VISTA 2: CHECKOUT (PAGINA NUEVA) */}
         {currentView === 'checkout' && (
             <div className="checkout-view">
                 <button onClick={handleBackToMenu} className="btn-back">
                     <ArrowLeft size={20} /> Seguir comprando
                 </button>
                 <h2 className="section-title">Finalizar Compra</h2>
+                
                 <div className="checkout-grid">
+                    {/* COLUMNA IZQUIERDA: RESUMEN */}
                     <div className="checkout-summary">
                         <h3>Resumen del Pedido</h3>
                         {cartItems.map((item, idx) => (
@@ -174,32 +163,44 @@ function Dashboard({ user, onLogout }) {
                         ))}
                         <div className="checkout-total-row">
                             <strong>Total a pagar:</strong>
-                            <strong>${cartTotal}.00</strong>
+                            <strong>${cartItems.reduce((acc, item) => acc + item.price, 0)}.00</strong>
                         </div>
                     </div>
+
+                    {/* COLUMNA DERECHA: FORMULARIO */}
                     <div className="checkout-form-container">
                         <h3>Datos de Envío y Pago</h3>
-                        <form className="checkout-form" onSubmit={(e) => { e.preventDefault(); alert("¡Compra realizada!"); }}>
+                        <form className="checkout-form" onSubmit={handlePlaceOrder}>
                             <div className="form-group">
                                 <label><MapPin size={16}/> Dirección de entrega</label>
-                                <input type="text" placeholder="Calle, Número, Colonia" required />
+                                {/* Este input aparecerá pre-llenado con los datos del perfil */}
+                                <input 
+                                    name="address" 
+                                    placeholder="Calle, Número, Colonia" 
+                                    required 
+                                    value={shippingData.address} 
+                                    onChange={handleInputChange}
+                                />
                             </div>
                             <div className="form-group">
                                 <label><CreditCard size={16}/> Número de Tarjeta</label>
-                                <input type="text" placeholder="0000 0000 0000 0000" maxLength="16" required />
+                                <input name="card" placeholder="0000 0000 0000 0000" maxLength="16" required 
+                                    value={shippingData.card} onChange={handleInputChange}/>
                             </div>
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Expira (MM/AA)</label>
-                                    <input type="text" placeholder="12/25" maxLength="5" required />
+                                    <input name="expiry" placeholder="12/25" maxLength="5" required 
+                                        value={shippingData.expiry} onChange={handleInputChange}/>
                                 </div>
                                 <div className="form-group">
                                     <label>CVV</label>
-                                    <input type="password" placeholder="123" maxLength="3" required />
+                                    <input name="cvv" type="password" placeholder="123" maxLength="3" required 
+                                        value={shippingData.cvv} onChange={handleInputChange}/>
                                 </div>
                             </div>
                             <button type="submit" className="btn-pay-now">
-                                Pagar ${cartTotal}.00
+                                Pagar Pedido
                             </button>
                         </form>
                     </div>
@@ -207,37 +208,23 @@ function Dashboard({ user, onLogout }) {
             </div>
         )}
 
-        {/* VISTA DE CATÁLOGO */}
+        {/* VISTA 3: CATÁLOGO (DEFAULT) */}
         {currentView === 'catalog' && (
           <div className="catalog-view">
             <div className="filters-scroll">
-                {CATEGORIES.map((cat) => (
-                    <button 
-                        key={cat} 
-                        className={`filter-btn ${selectedCategory === cat ? 'active' : ''}`}
-                        onClick={() => setSelectedCategory(cat)} 
-                    >
+                {CATEGORIES.map(cat => (
+                    <button key={cat} className={`filter-btn ${selectedCategory === cat ? 'active' : ''}`} onClick={() => setSelectedCategory(cat)}>
                         {cat}
                     </button>
                 ))}
             </div>
-            
-            {products.length === 0 && (
-                <p className="no-products-msg">No se encontraron productos.</p>
-            )}
-
             <div className="products-grid">
-              {products.map((product) => (
-                <div key={product.id} className="product-card" onClick={() => handleProductClick(product)}>
-                  <div className="card-image-container">
-                    <img src={product.image} alt={product.title} className="card-image" />
-                  </div>
+              {products.map(p => (
+                <div key={p.id} className="product-card" onClick={() => handleProductClick(p)}>
+                  <div className="card-image-container"><img src={p.image} alt={p.title} className="card-image"/></div>
                   <div className="card-content">
-                    <div className="card-header">
-                        <h3 className="card-title">{product.title}</h3>
-                        <span className="card-price">${product.price}</span>
-                    </div>
-                    <p className="card-desc">{product.description}</p>
+                    <div className="card-header"><h3>{p.title}</h3><span>${p.price}</span></div>
+                    <p className="card-desc">{p.description}</p>
                   </div>
                 </div>
               ))}
