@@ -51,8 +51,8 @@ function Cart({ cartItems, onRemoveItem, onGoToCheckout }) {
                             </div>
                             <button 
                                 onClick={() => {
-                                    setShowCart(false); // Cerramos el menú
-                                    onGoToCheckout();   // ¡Navegamos a la pagina nueva!
+                                    setShowCart(false); 
+                                    onGoToCheckout();  
                                 }} 
                                 className="btn-checkout-mini"
                             >

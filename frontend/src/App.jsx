@@ -33,7 +33,7 @@ function App() {
     setShowLogin(true);
   };
 
-  // 2. FUNCIÓN PARA MANEJAR EL ÉXITO
+  // FUNCIÓN PARA MANEJAR EL ÉXITO
   // Como Login.jsx ya guardó en localStorage, aquí solo actualizamos el estado
   const handleLoginSuccess = () => {
     const storedUser = localStorage.getItem('user');
@@ -53,7 +53,7 @@ function App() {
     setShowLogin(false);
   };
 
-  // 3. RENDERIZADO CONDICIONAL
+  // RENDERIZADO CONDICIONAL
   if (isAuthenticated && user) {
     return <Dashboard user={user} onLogout={handleLogout} />;
   }

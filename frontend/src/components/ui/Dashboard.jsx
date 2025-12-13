@@ -55,14 +55,12 @@ function Dashboard({ user, onLogout }) {
   const handleGoToCheckout = () => {
       if(cartItems.length === 0) { alert("Tu carrito está vacío"); return; }
       
-      // Aquí concatenamos los 3 campos del usuario para el envío
       // Si el usuario tiene dirección guardada, la usamos por defecto
-      let defaultAddress = '';
-      if (user && user.calle) {
+      let defaultAddress = shippingData.address; // Mantiene lo que haya escrito si vuelve
+      if (!defaultAddress && user && user.calle) {
           defaultAddress = `${user.calle} #${user.numero_exterior}, Col. ${user.colonia}`;
       }
 
-      // Actualizamos el formulario con esa dirección
       setShippingData(prev => ({
           ...prev, 
           address: defaultAddress 
@@ -73,39 +71,72 @@ function Dashboard({ user, onLogout }) {
 
   const handleInputChange = (e) => setShippingData({...shippingData, [e.target.name]: e.target.value});
 
-  // PROCESAR PAGO
+  // --- LOGICA DE PAGO CORREGIDA ---
   const handlePlaceOrder = async (e) => {
-      e.preventDefault();
-      const total = cartItems.reduce((acc, item) => acc + item.price, 0);
+    if (e) e.preventDefault();
 
-      try {
-          const response = await fetch(ORDERS_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  userId: user.id,
-                  items: cartItems,
-                  total: total,
-                  // Se envía la dirección que esté en el input (ya sea la automática o si el usuario la editó)
-                  address: shippingData.address 
-              })
-          });
+    // INTENTAMOS OBTENER EL ID DEL USUARIO DE VARIAS FORMAS
+    let userId = user?.id; // Primero intentamos desde la prop
 
-          const data = await response.json();
-          if (response.ok) {
-              alert(`¡Pedido Exitoso! ID: ${data.orderId}`);
-              setCartItems([]);
-              setShippingData({ address: '', card: '', expiry: '', cvv: '' });
-              setCurrentView('catalog');
-          } else {
-              alert('Error: ' + data.message);
-          }
-      } catch (error) {
-          console.error("Error pago:", error);
-          alert("Error de conexión");
-      }
+    // Si no está en la prop, buscamos en el almacenamiento local por si se recargó la página
+    if (!userId) {
+        const storedUser = localStorage.getItem('usuario') || localStorage.getItem('user');
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            userId = parsedUser.id || parsedUser.idClienteWeb; // Probamos ambas llaves por si acaso
+        }
+    }
+
+    // 2. VALIDACIONES
+    if (!userId) {
+        alert("No se ha identificado al usuario. Por favor cierra sesión y vuelve a entrar.");
+        return;
+    }
+    
+    if (!shippingData.address) {
+        alert("Por favor ingresa una dirección de entrega.");
+        return;
+    }
+
+    // 3. PREPARAR DATOS
+    const totalCalculado = cartItems.reduce((acc, item) => acc + item.price, 0);
+
+    const datosPedido = {
+        userId: userId,               // ID recuperado (prop o localStorage)
+        items: cartItems,             
+        total: totalCalculado,        
+        address: shippingData.address 
+    };
+
+    // ENVIAR AL SERVIDOR
+    try {
+        console.log("Enviando pedido...", datosPedido);
+
+        const response = await fetch(ORDERS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosPedido)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert(`¡Pedido realizado con éxito! ID: ${data.orderId}`);
+            
+            setCartItems([]);
+            setCurrentView('catalog');
+            setShippingData({ address: '', card: '', expiry: '', cvv: '' }); // Limpiar form
+            
+        } else {
+            const errorTexto = await response.text();
+            console.error("Error del servidor:", errorTexto);
+            alert("Error al guardar el pedido: " + errorTexto);
+        }
+
+    } catch (error) {
+        console.error("Error de conexión:", error);
+        alert("No se pudo conectar con el servidor.");
+    }
   };
-
   if (loading) return <div className="dashboard-container"><p>Cargando...</p></div>;
   
   return (
