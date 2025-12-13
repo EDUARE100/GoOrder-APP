@@ -2,43 +2,48 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs'); 
 const jwt = require('jsonwebtoken'); 
-require('dotenv').config(); 
+const dotenv = require('dotenv');
 
-const db = require('./src/config/database');
+// Importamos tu conexión a la BD existente
+const db = require('./src/config/database'); 
+
+dotenv.config();
 
 const app = express();
 
-// --- MIDDLEWARES ---
-app.use(cors({
-    origin: ['http://localhost:5173', 'http://192.168.100.63:5173', 'http://192.168.100.63:3000' , 'http://172.20.10.2:3000'],
-    credentials: true
-}));
+// --- CONFIGURACIÓN ---
+app.use(cors()); // Permite conexiones desde cualquier origen
 app.use(express.json());
 
-// 1. RUTA DE REGISTRO (POST) - ACTUALIZADA
-// React envía: { nombre, email, password, telefono, calle, numero_exterior, colonia }
+
+// 1. RUTA DE REGISTRO
+
 app.post('/api/auth/register', async (req, res) => {
-    // 1. Recibimos los nuevos campos de dirección
+    // Recibimos los datos exactos que envía tu Login.jsx
     const { nombre, email, password, telefono, calle, numero_exterior, colonia } = req.body;
 
-    // Validamos ue no falten datos importantes
-    if (!nombre || !email || !password || !telefono || !calle || !numero_exterior || !colonia) {
-        return res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    // Validación básica
+    if (!nombre || !email || !password || !telefono) {
+        return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
     try {
+        // 1. Verificar si ya existe el correo en tb_usuario_web
         const [userExists] = await db.query('SELECT email FROM tb_usuario_web WHERE email = ?', [email]);
         
         if (userExists.length > 0) {
-            return res.status(409).json({ message: 'El correo electrónico ya está registrado' });
+            return res.status(400).json({ message: 'El correo ya está registrado' });
         }
 
+        // Encriptar contraseña con bcrypt
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 2. Insertamos la dirección en la BD
+        // 3. Insertar en la tabla CORRECTA (tb_usuario_web) con la dirección
         await db.query(
-            'INSERT INTO tb_usuario_web (nombre, email, contrasena, telefono, calle, numero_exterior, colonia) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            `INSERT INTO tb_usuario_web 
+            (nombre, email, contrasena, telefono, calle, numero_exterior, colonia) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [nombre, email, hashedPassword, telefono, calle, numero_exterior, colonia]
         );
 
@@ -46,50 +51,45 @@ app.post('/api/auth/register', async (req, res) => {
 
     } catch (error) {
         console.error('Error en registro:', error);
-        res.status(500).json({ message: 'Error en el servidor al intentar registrarse' });
+        res.status(500).json({ message: 'Error en el servidor al registrar' });
     }
 });
 
-// 2. RUTA DE LOGIN (POST)
+
+// 2. RUTA DE LOGIN 
+
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Correo y contraseña son obligatorios' });
-    }
-
     try {
-        // Seleccionamos TODOS los campos (*) para obtener también la dirección
+        // Buscamos el usuario
         const [users] = await db.query('SELECT * FROM tb_usuario_web WHERE email = ?', [email]);
 
         if (users.length === 0) {
-            return res.status(401).json({ message: 'Credenciales inválidas (Usuario no encontrado)' });
+            return res.status(400).json({ message: 'Usuario no encontrado' });
         }
 
         const user = users[0];
 
+        // Comparamos contraseñas
         const validPassword = await bcrypt.compare(password, user.contrasena);
-
         if (!validPassword) {
-            return res.status(401).json({ message: 'Credenciales inválidas (Contraseña incorrecta)' });
+            return res.status(400).json({ message: 'Contraseña incorrecta' });
         }
 
-        const token = jwt.sign(
-            { id: user.idClienteWeb, email: user.email }, 
-            process.env.JWT_SECRET || 'secreto_super_seguro', 
-            { expiresIn: '24h' }
-        );
+        // Generamos Token (Opcional, pero recomendado)
+        const token = jwt.sign({ id: user.idClienteweb }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
 
-        // 3. Enviamos los datos de dirección al frontend
+        //Enviamos el objeto 'user' formateado como lo espera el Frontend
+        // El Dashboard busca "user.id", así que mapeamos idClienteweb -> id
         res.json({
             message: 'Login exitoso',
-            token: token,
+            token,
             user: {
-                id: user.idClienteWeb,
+                id: user.idClienteweb,
                 nombre: user.nombre,
                 email: user.email,
                 telefono: user.telefono,
-                // Agregamos la dirección al objeto usuario
                 calle: user.calle,
                 numero_exterior: user.numero_exterior,
                 colonia: user.colonia
@@ -98,79 +98,93 @@ app.post('/api/auth/login', async (req, res) => {
 
     } catch (error) {
         console.error('Error en login:', error);
-        res.status(500).json({ message: 'Error en el servidor al iniciar sesión' });
+        res.status(500).json({ message: 'Error en el servidor' });
     }
 });
 
-// 3. OBTENER MENÚ CON FILTROS
+
+// 3. RUTA DE PRODUCTOS (Para el Catálogo)
+
 app.get('/api/products', async (req, res) => {
-    const categoryName = req.query.category; 
-    
+    const category = req.query.category;
     try {
-        let query = `
-            SELECT 
-                p.idProducto AS id, 
-                p.nombre AS title, 
-                p.descripcion AS description, 
-                p.descripcion AS fullDescription,  
-                p.precio AS price, 
-                p.url_imagen AS image, 
-                c.descripcion AS category 
+        let sql = `
+            SELECT p.idProducto as id, p.nombre as title, p.precio as price, 
+                   p.descripcion as description, p.url_imagen as image, c.descripcion as category
             FROM tb_producto p
             JOIN tb_categoria c ON p.idCategoria = c.idCategoria
-            WHERE p.estado = 1 
+            WHERE p.estado = 1
         `;
         
-        const queryParams = [];
-
-        if (categoryName && categoryName !== 'Todos') {
-            query += ` AND c.descripcion = ?`; 
-            queryParams.push(categoryName);
+        const params = [];
+        if (category && category !== 'Todos') {
+            sql += ' AND c.descripcion = ?';
+            params.push(category);
         }
-        
-        const [results] = await db.query(query, queryParams);
-        
-        res.json(results);
 
+        const [products] = await db.query(sql, params);
+        res.json(products);
     } catch (error) {
-        console.error('Error obteniendo productos con filtro:', error); 
-        res.status(500).send('Error al obtener el menú');
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener productos' });
     }
 });
 
-// 4. CREAR PEDIDO
+
+// 4. RUTA DE PEDIDOS
+
 app.post('/api/orders', async (req, res) => {
-    // Recibimos userId, productos, total y dirección
+    // Recibimos userId, items, total y address desde el Dashboard.jsx
     const { userId, items, total, address } = req.body;
 
-    if (!userId || !items || items.length === 0 || !address) {
-        return res.status(400).json({ message: 'Faltan datos del pedido' });
+    // Validación
+    if (!userId || !items || items.length === 0) {
+        return res.status(400).json({ message: 'Datos de pedido incompletos' });
     }
 
+    let connection;
     try {
-        const [orderResult] = await db.query(
-            'INSERT INTO tb_pedido_web (idClienteWeb, total_pagar, direccion_entrega, estado) VALUES (?, ?, ?, ?)',
-            [userId, total, address, 'PENDIENTE']
+        // Usamos una conexión dedicada para poder hacer rollback si algo falla (Transacción)
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // 1. Insertar en tb_pedido_web
+        const [orderResult] = await connection.query(
+            `INSERT INTO tb_pedido_web (idClienteWeb, total_pagar, direccion_entrega, estado) 
+             VALUES (?, ?, ?, 'PENDIENTE')`,
+            [userId, total, address]
         );
+        
         const orderId = orderResult.insertId;
 
+        // 2. Insertar cada producto en tb_detalle_pedido_web
         for (const item of items) {
-            await db.query(
-                'INSERT INTO tb_detalle_pedido_web (idPedidoWeb, idProducto, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)',
-                [orderId, item.id, 1, item.price, item.price]
+            await connection.query(
+                `INSERT INTO tb_detalle_pedido_web 
+                (idPedidoWeb, idProducto, cantidad, precio_unitario, subtotal) 
+                VALUES (?, ?, ?, ?, ?)`,
+                [orderId, item.id, 1, item.price, item.price] // Asumimos cantidad 1 por item según tu carrito actual
             );
         }
 
-        res.status(201).json({ message: 'Pedido creado', orderId });
+        // Si todo sale bien, confirmamos los cambios
+        await connection.commit();
+        
+        console.log(`Pedido #${orderId} creado exitosamente.`);
+        res.status(201).json({ message: 'Pedido guardado', orderId });
 
     } catch (error) {
-        console.error('Error creando pedido:', error);
-        res.status(500).json({ message: 'Error al procesar el pedido' });
+        // Si hay error, deshacemos todo para no dejar pedidos a medias
+        if (connection) await connection.rollback();
+        console.error('Error al guardar pedido:', error);
+        res.status(500).json({ message: 'Error al procesar el pedido en base de datos' });
+    } finally {
+        if (connection) connection.release();
     }
 });
 
-//Inicialización del servidor
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => { //0.0.0.0. Para que acepte todos los puertos o conexiones
+    console.log(`Servidor corriendo en puerto ${PORT}`);
 });
