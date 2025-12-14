@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { UtensilsCrossed, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
 import '../../styles/Login.css';
 
-const BASE_API_URL = 'http://192.168.100.63:3000/api/auth';
+const getBaseUrl = () => {
+    const { hostname } = window.location;
+    return `http://${hostname}:3000`;
+};
+
+const BASE_API_URL = `${getBaseUrl()}/api/auth`;
 
 function Login({ onBack, onLoginSuccess }) { 
     const [isLogin, setIsLogin] = useState(true);

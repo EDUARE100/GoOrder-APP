@@ -4,10 +4,9 @@ import '../../styles/Dashboard.css';
 import Cart from './Cart';
 
 const getBaseUrl = () => {
-    const currentHost = window.location.hostname; 
-    return (currentHost === 'localhost' || currentHost === '127.0.0.1') 
-        ? 'http://localhost:3000' 
-        : 'http://192.168.100.63:3000';
+    
+    const { hostname } = window.location;
+    return `http://${hostname}:3000`;
 };
 
 const BASE_URL = getBaseUrl(); 
