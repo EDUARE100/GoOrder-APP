@@ -351,6 +351,9 @@ public class Interfaz extends javax.swing.JFrame {
 
     //REPORTES
     private void reportes_clientes(java.awt.event.ActionEvent evt) {
+        InterPedidosWeb pedidosWeb = new InterPedidosWeb();
+        jDesktopPane_menu.add(pedidosWeb);
+        pedidosWeb.setVisible(true);
     }
 
     
